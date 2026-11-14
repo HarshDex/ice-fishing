@@ -125,7 +125,14 @@
   .chip.sel { opacity: 1; transform: translateY(-5px) scale(1.1); box-shadow: 0 0 0 3px var(--gold), 0 0 14px #ffd95a99; }
   .statusbar { display: flex; justify-content: space-between; align-items: center; font-size: .8rem; gap: 8px; }
   .statusbar b { color: var(--gold); font-size: 1rem; margin-left: 4px; }
-  #refill { border: 1px solid #9fe3ff66; background: #0b2a4d; color: #cfefff; border-radius: 999px; padding: 4px 12px; font-size: .72rem; font-weight: 700; cursor: pointer; }
+  #refill { border: 1px solid #ffd95a; background: linear-gradient(#1f9e58, #0f6b39); color: #fff; border-radius: 999px; padding: 5px 14px; font-size: .76rem; font-weight: 800; cursor: pointer; box-shadow: 0 0 10px #3fe08a66; }
+  #chipMenu { position: fixed; left: 50%; bottom: 46px; transform: translateX(-50%); z-index: 40; display: none; flex-direction: column; min-width: 230px; background: #06182ef7; border: 1px solid #9fe3ff66; border-radius: 14px; padding: 8px; box-shadow: 0 12px 30px #000c; }
+  #chipMenu.on { display: flex; }
+  #chipMenu b { font-size: .7rem; letter-spacing: 1.5px; color: var(--ice); padding: 4px 8px 6px; text-align: center; }
+  #chipMenu button { margin: 3px 0; padding: 10px; border: 0; border-radius: 10px; cursor: pointer; font: 800 1rem "Segoe UI", sans-serif; color: #2a1500; background: linear-gradient(#fff3b0, #ffc21a); box-shadow: 0 3px 0 #8a5a00; }
+  #chipMenu button:hover { filter: brightness(1.08); }
+  #chipMenu button.reset { background: #123a66; color: #cfefff; box-shadow: none; font-size: .8rem; font-weight: 700; }
+  #chipMenu .vnote { font-size: .66rem; opacity: .7; text-align: center; padding: 6px 4px 0; }
   @media (min-width: 900px) {
     .tiles { grid-template-columns: .95fr 1fr 1fr 1fr .6fr; grid-template-areas: "snow blue orange red all" "ice blue orange red all"; }
     .tile.base { height: auto; min-height: 54px; font-size: .88rem; gap: 6px; }
@@ -244,7 +251,7 @@
       </div>
       <div class="statusbar">
         <span>Total bet<b id="total">0</b></span>
-        <button id="refill">Refill chips</button>
+        <button id="refill">➕ Add chips</button>
         <span>Balance<b id="balance">100,000</b></span>
       </div>
     </div>
@@ -252,6 +259,7 @@
 </div>
 
 <div id="voiceMenu"></div>
+<div id="chipMenu"></div>
 <div id="host">
   <div class="host-frame">
     <svg id="hostSvg" viewBox="0 0 300 400" preserveAspectRatio="xMidYMin slice">
@@ -423,6 +431,7 @@ function seeded(a) {
 }
 
 let rot = 0, phase = "idle", balance = START_BALANCE, chip = 100, curHl = null;
+try { const b = parseFloat(localStorage.getItem("flsBalance")); if (isFinite(b) && b >= 0) balance = Math.round(b); } catch (e) {} // balance survives a reload
 let bets = {}, lastBets = {}, mults = {}, past = [], undoStack = [];
 let timerEnd = null, timerDur = 0, lastSec = null, auto = false;
 KEYS.forEach(k => bets[k] = 0);
@@ -957,7 +966,7 @@ function startBetting() {
     else if (sum > balance) { auto = false; toast("Auto stopped — not enough chips"); }
     else addBets(KEYS.filter(k => lastBets[k]).map(k => [k, lastBets[k]]), true);
   }
-  if (balance < CHIPS[0].v) toast("Out of chips — tap Refill chips");
+  if (balance < CHIPS[0].v) toast("Out of chips — tap Add chips");
   renderUI();
 }
 function updateTimer(now) {
@@ -1088,6 +1097,7 @@ function showBadges() {
   });
 }
 function renderUI() {
+  try { localStorage.setItem("flsBalance", String(balance)); } catch (e) {}
   $("balance").textContent = fmt(balance - (phase === "bet" ? totalBet() : 0));
   $("total").textContent = fmt(totalBet());
   document.querySelectorAll(".chip").forEach(c => c.classList.toggle("sel", +c.dataset.v === chip));
@@ -1103,11 +1113,25 @@ $("auto").onclick = () => {
   if (auto && phase === "bet" && !totalBet() && sumOf(lastBets) && sumOf(lastBets) <= balance) addBets(KEYS.filter(k => lastBets[k]).map(k => [k, lastBets[k]]));
   renderUI();
 };
-$("refill").onclick = () => {
-  if (balance >= START_BALANCE) return toast("You still have plenty of chips");
-  if (phase !== "bet") return toast("Refill between rounds");
-  balance = START_BALANCE; toast("Refilled to " + fmt(START_BALANCE) + " play chips"); renderUI();
-};
+// ----- free play-chip top-ups (no real money anywhere) -----
+const TOPUPS = [{ v: 10000, l: "+10K" }, { v: 50000, l: "+50K" }, { v: 100000, l: "+1 Lakh" }, { v: 1000000, l: "+10 Lakh" }];
+(() => {
+  const m = $("chipMenu");
+  m.innerHTML = "<b>ADD PLAY CHIPS</b>" + TOPUPS.map(t => "<button data-v='" + t.v + "'>" + t.l + "</button>").join("") +
+    "<button data-v='reset' class='reset'>Reset to " + fmt(START_BALANCE) + "</button><div class='vnote'>Free play chips for fun only. They have no real value.</div>";
+  m.querySelectorAll("button").forEach(b => b.onclick = () => {
+    if (b.dataset.v === "reset") {
+      if (phase !== "bet") return toast("Reset between rounds, while bets are open");
+      KEYS.forEach(k => bets[k] = 0); undoStack = []; balance = START_BALANCE; toast("Balance reset to " + fmt(START_BALANCE));
+    } else {
+      const v = +b.dataset.v; balance += v; toast(fmt(v) + " play chips added!");
+      const r = $("balance").getBoundingClientRect(); burst(r.left + r.width / 2, r.top, 40);
+    }
+    chipSound(); m.classList.remove("on"); renderUI();
+  });
+})();
+$("refill").onclick = e => { e.stopPropagation(); $("chipMenu").classList.toggle("on"); };
+addEventListener("pointerdown", e => { if (!e.target.closest("#chipMenu, #refill")) $("chipMenu").classList.remove("on"); });
 
 // ================= CONFETTI =================
 const fx = $("fx"), fctx = fx.getContext("2d");
