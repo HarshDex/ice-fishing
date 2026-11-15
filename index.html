@@ -5,8 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Frozen Lake Spin — a live-show ice fishing wheel game. Play chips only, just for fun.">
 <title>Frozen Lake Spin</title>
+<!-- Styles load with the page (not from JavaScript), so nothing ever shows unstyled. -->
+<style>
+  html, body { margin: 0; height: 100%; background: #030a1a; }
+  #loader { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+    background: radial-gradient(circle at 50% 40%, #0d3157, #030a1a 70%); color: #cfefff; font: 600 15px "Segoe UI", system-ui, sans-serif; letter-spacing: 2px; transition: opacity .5s; }
+  #loader.done { opacity: 0; pointer-events: none; }
+  #loader i { width: 54px; height: 54px; border-radius: 50%; border: 5px solid #9fe3ff33; border-top-color: #9fe3ff; animation: loaderSpin .9s linear infinite; }
+  @keyframes loaderSpin { to { transform: rotate(360deg); } }
+</style>
+<link rel="stylesheet" href="/src/styles.css">
 </head>
 <body>
+<div id="loader"><i></i>LOADING FROZEN LAKE SPIN…</div>
 <canvas id="bg"></canvas>
 <div class="snow" id="s1"></div>
 <div class="snow" id="s2"></div>

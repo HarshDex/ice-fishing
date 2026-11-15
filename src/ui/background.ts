@@ -21,7 +21,10 @@ function sparkle(c, x, y, z) {
   c.beginPath(); c.moveTo(x - z * 2, y); c.lineTo(x, y + z * .4); c.lineTo(x + z * 2, y); c.lineTo(x, y - z * .4); c.closePath(); c.fill();
 }
 export function drawBg(bg: HTMLCanvasElement) { // an ice cave, painted once per resize; nothing behind the wheel is redrawn per frame
-  const W = bg.width = innerWidth, H = bg.height = innerHeight, c = bg.getContext("2d"), r = seeded(5);
+  // paint at the screen's real pixel density (Windows 125–150% scaling, phones at 2–3x), not at CSS pixels
+  const dpr = Math.min(devicePixelRatio || 1, 3), W = innerWidth, H = innerHeight;
+  bg.width = Math.round(W * dpr); bg.height = Math.round(H * dpr);
+  const c = bg.getContext("2d")!, r = seeded(5); c.setTransform(dpr, 0, 0, dpr, 0, 0);
   const wr = $("wrap").getBoundingClientRect(), has = wr.width > 0;
   const cx = has ? wr.left + wr.width / 2 : W / 2, cy = has ? wr.top + wr.height / 2 : H * .4, R = has ? wr.width / 2 : Math.min(W, H) * .35;
   const s = Math.max(.6, Math.min(1.6, H / 800));
@@ -50,8 +53,8 @@ export function drawBg(bg: HTMLCanvasElement) { // an ice cave, painted once per
   g.addColorStop(0, "rgba(4,18,40,.4)"); g.addColorStop(1, "rgba(4,18,40,0)"); c.fillStyle = g; c.fillRect(0, 0, W, H);
 }
 export function snowTile(size, n, seed) {
-  const cv = document.createElement("canvas"); cv.width = cv.height = size;
-  const c = cv.getContext("2d"), r = seeded(seed); c.fillStyle = "#fff";
+  const cv = document.createElement("canvas"); cv.width = cv.height = size * 2; // 2x so flakes stay round on high-density screens (CSS shows it at `size`)
+  const c = cv.getContext("2d"), r = seeded(seed); c.scale(2, 2); c.fillStyle = "#fff";
   for (let i = 0; i < n; i++) { c.globalAlpha = .45 + r() * .5; c.beginPath(); c.arc(6 + r() * (size - 12), 6 + r() * (size - 12), 1 + r() * 2.2, 0, TAU); c.fill(); }
   return "url(" + cv.toDataURL() + ")";
 }

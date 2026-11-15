@@ -23,10 +23,12 @@
 
   /* stage */
   #stage { flex: 1; min-height: 0; position: relative; }
-  .wheel-wrap { position: absolute; z-index: 1; }
+  .wheel-wrap { position: absolute; z-index: 1; transform-origin: 50% 7%; transition: transform 1.3s cubic-bezier(.3, 0, .2, 1); will-change: transform; }
+  .wheel-wrap.tense { transform: scale(1.5); } /* zoom on the flapper for the last few pegs */
   .wheel-wrap::before { content: ""; position: absolute; inset: 1.5%; border-radius: 50%; box-shadow: 0 30px 50px #000d, 0 0 70px 8px #59d8ff33; }
   /* the 3D wheel canvas reaches past the wheel so the ice crystals around it fit */
-  #wheel3d { position: absolute; left: -14%; top: -14%; width: 128%; height: 128%; display: block; pointer-events: none; }
+  #wheel3d { position: absolute; left: -14%; top: -14%; width: 128%; height: 128%; display: block; pointer-events: none; 
+    -webkit-mask-image: radial-gradient(circle closest-side, #000 93%, transparent 100%); mask-image: radial-gradient(circle closest-side, #000 93%, transparent 100%); }
   #timerBox { position: absolute; top: 6px; right: 10px; width: 68px; height: 68px; z-index: 3; opacity: 0; transition: opacity .3s; }
   #timerBox.on { opacity: 1; }
   #timerBox svg { position: absolute; inset: 0; transform: rotate(-90deg); }

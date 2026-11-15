@@ -31,6 +31,9 @@ export class Presenter {
   private pulse = 0;
   private caption = document.getElementById("caption")!;
 
+  /** Swap the face at any time, e.g. when real presenter media finishes loading. */
+  setAvatar(a: Avatar) { this.avatar = a; }
+
   constructor(private avatar: Avatar) {
     try { this.savedName = localStorage.getItem("flsVoiceName"); } catch { /* storage blocked */ }
     if (this.synth) { this.pickVoice(); this.synth.onvoiceschanged = () => this.pickVoice(); }

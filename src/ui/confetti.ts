@@ -13,7 +13,7 @@ export function burst(x, y, n) {
 export function drawFx() {
   if (!parts.length && !fxDirty) return;
   fctx.clearRect(0, 0, fx.width, fx.height); fxDirty = parts.length > 0;
-  parts = parts.filter(p => p.life > 0 && p.y < fx.height + 20);
+  parts = parts.filter(p => p.life > 0 && p.y < innerHeight + 20);
   for (const p of parts) {
     p.x += p.vx; p.y += p.vy; p.vy += .32; p.vx *= .985; p.rot += p.vr; p.life -= .011;
     fctx.save(); fctx.globalAlpha = Math.min(1, p.life * 2.5); fctx.translate(p.x, p.y); fctx.rotate(p.rot); fctx.fillStyle = p.c;
@@ -23,4 +23,7 @@ export function drawFx() {
 }
 
 
-export function sizeFx() { fx.width = innerWidth; fx.height = innerHeight; }
+export function sizeFx() { // sharp on high-density screens: draw in CSS pixels on a device-pixel canvas
+  const dpr = Math.min(devicePixelRatio || 1, 3);
+  fx.width = Math.round(innerWidth * dpr); fx.height = Math.round(innerHeight * dpr); fctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}

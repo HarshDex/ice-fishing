@@ -5,7 +5,7 @@ import { $, rnd } from "../core/util";
 import { BET_TIME, CHIPS, KEYS, N, NEXT_ROUND, RESULT_HOLD, TYPES, WHEEL, type BetKey } from "./config";
 import { clearBets, game, totalBet } from "../core/state";
 import { bus } from "../core/events";
-import { WheelPhysics, RAMP, TENSE_W } from "../wheel/physics";
+import { WheelPhysics, TENSE_W } from "../wheel/physics";
 import type { Wheel3D } from "../wheel/Wheel3D";
 import { chime, clack, duck, heartbeat, thud, tone } from "../audio/audio";
 import { autoRebet, markWin, renderUI, setDockOpen, showBadges } from "../ui/dock";
@@ -80,7 +80,7 @@ export class Round {
   private spinStopped() {
     this.physics.hold(); clearInterval(this.beat); $("wrap").classList.remove("spinning");
     setTimeout(() => { this.land(this.physics.index()); duck(false); }, 700);
-    setTimeout(() => { this.wheel.setTense(false); $("vig").classList.remove("on"); }, 1900);
+    setTimeout(() => { $("wrap").classList.remove("tense"); this.wheel.setZoomed(false); $("vig").classList.remove("on"); }, 1900);
   }
 
   private land(idx: number) {
@@ -125,12 +125,12 @@ export class Round {
       if (this.lastIdx >= 0 && now - this.lastClick > 40) { clack(p.w, p.mode !== "spin"); this.lastClick = now; }
       this.lastIdx = idx;
     }
-    if (p.mode === "spin" && !this.tense && p.t > RAMP && p.w < TENSE_W) { // the last few pegs: zoom in on the flapper
-      this.tense = true; this.wheel.setTense(true); $("vig").classList.add("on"); duck(true); bus.emit("SPIN_TENSE");
+    if (p.mode === "spin" && !this.tense && !p.launching && p.w < TENSE_W) { // the last few pegs: zoom in on the flapper
+      this.tense = true; this.wheel.setZoomed(true); $("wrap").classList.add("tense"); $("vig").classList.add("on"); duck(true); bus.emit("SPIN_TENSE");
       heartbeat(); this.beat = window.setInterval(heartbeat, 620);
     }
     if (stopped && p.mode === "spin") this.spinStopped();
-    this.wheel.render(now, dt, p.rot, p.fd, p.mode === "spin" ? p.w : 0);
+    this.wheel.render(now, dt, p.rot, p.fd, p.mode === "spin" ? p.w : 0, p.pegHits);
     this.updateTimer(now);
   }
 

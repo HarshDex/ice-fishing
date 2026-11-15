@@ -14,8 +14,10 @@ import { SPR_K, fishSprite } from "./fishArt";
 // rod -> crane -> helicopter -> cargo jet -> giant robot. When one stalls, the next is called in.
 export const sc = $("scene") as HTMLCanvasElement, sceneCtx = sc.getContext("2d")!;
 export const SW = 720, SH = 460, ICE = 300, HX = 440, HY = 356;
-export const WX0 = -580, WY0 = -660, WW = 1900, WH = 1180, BGQ = 1.5; // the world is painted once; the camera zooms out over it
-sc.width = SW * 2; sc.height = SH * 2;
+export const WX0 = -580, WY0 = -660, WW = 1900, WH = 1180, BGQ = 2; // the world is painted once; the camera zooms out over it
+// drawing scale: 2x is plenty for most screens, 3x on high-density desktops so the scene stays crisp
+export const Q = (devicePixelRatio || 1) >= 1.4 && Math.min(screen.width, screen.height) >= 700 ? 3 : 2;
+sc.width = SW * Q; sc.height = SH * Q;
 export let sx: CanvasRenderingContext2D = sceneCtx, drops: any[] = [], bonusRun: object | null = null, cableCol = "#e6eef5";
 export const rr = (x, y, w, h, r) => { sx.beginPath(); sx.roundRect(x, y, w, h, r); sx.fill(); };
 export const circ = (x, y, r) => { sx.beginPath(); sx.arc(x, y, r, 0, TAU); sx.fill(); };
@@ -375,7 +377,7 @@ export function playBonus(key: BetKey, wheelMult: number, stake: number, forceMu
     cableCol = mode === "strain" && Math.sin(t * 42) > 0 ? "#ff6a4a" : "#e6eef5"; // the line flashes red while it strains
     // camera
     const ct = (1 - S.z) / .56, chx = 440 - 60 * ct, chy = 356 + 42 * ct, shx = (Math.random() - .5) * S.shake, shy = (Math.random() - .5) * S.shake;
-    sx.setTransform(2 * S.z, 0, 0, 2 * S.z, 2 * (chx - HX * S.z + shx), 2 * (chy - HY * S.z + shy));
+    sx.setTransform(Q * S.z, 0, 0, Q * S.z, Q * (chx - HX * S.z + shx), Q * (chy - HY * S.z + shy));
     sx.drawImage(sceneBg, WX0, WY0, WW, WH);
     for (let k = 0; k < 3; k++) { const p = (t * .25 + k / 3) % 1; sx.fillStyle = "rgba(255,255,255," + (1 - p) * .3 + ")"; circ(98 + Math.sin(p * 6) * 4 + p * 14, ICE - 46 - p * 42, 4 + p * 8); }
     // where the fish is
@@ -459,7 +461,7 @@ export function playBonus(key: BetKey, wheelMult: number, stake: number, forceMu
     sx.fillStyle = "#d9f4ff"; for (const d of drops) circ(d.x, d.y, d.r);
 
     // HUD (screen space)
-    sx.setTransform(2, 0, 0, 2, 0, 0);
+    sx.setTransform(Q, 0, 0, Q, 0, 0);
     sx.fillStyle = "rgba(255,255,255,.75)"; // falling snow and a soft dark edge, in front of the camera
     for (const q of flakes) circ((((q.x + Math.sin(t * .7 + q.y) * 8 - t * 12) % SW) + SW) % SW, (q.y + t * q.v) % SH, q.r);
     const vg = sx.createRadialGradient(360, 230, 190, 360, 230, 480); vg.addColorStop(0, "rgba(0,10,30,0)"); vg.addColorStop(1, "rgba(0,10,30,.55)");

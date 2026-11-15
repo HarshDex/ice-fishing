@@ -12,11 +12,11 @@ export interface BetType {
 }
 
 export const TYPES: Record<BetKey, BetType> = {
-  snow:   { name: "Snowflake",   c0: "#7fb2cc", c1: "#f9feff", ink: "#134a68", card: ["#f6fcff", "#a3cfe3"], cardInk: "#0d3550" },
-  ice:    { name: "Icicle",      c0: "#10405c", c1: "#5db3d8", ink: "#eaf8ff", card: ["#63b9dd", "#1b5475"], cardInk: "#fff" },
-  blue:   { name: "Blue Bite",   c0: "#06245a", c1: "#2f8ff0", card: ["#45a6ff", "#0b3f86"], cardInk: "#fff", bonus: [3, 50] },
-  orange: { name: "Orange Haul", c0: "#5e2400", c1: "#ff8a1c", card: ["#ffa53d", "#b04800"], cardInk: "#fff", bonus: [5, 150] },
-  red:    { name: "Red Giant",   c0: "#4f0404", c1: "#ef2b22", card: ["#ff5244", "#8a0a0a"], cardInk: "#fff", bonus: [10, 400] },
+  snow:   { name: "Snowflake",   c0: "#9fc6da", c1: "#ffffff", ink: "#134a68", card: ["#f6fcff", "#a3cfe3"], cardInk: "#0d3550" },
+  ice:    { name: "Icicle",      c0: "#02172b", c1: "#135f96", ink: "#eaf8ff", card: ["#63b9dd", "#1b5475"], cardInk: "#fff" },
+  blue:   { name: "Blue Bite",   c0: "#041a47", c1: "#1f74e0", card: ["#45a6ff", "#0b3f86"], cardInk: "#fff", bonus: [3, 50] },
+  orange: { name: "Orange Haul", c0: "#4a1a00", c1: "#f57200", card: ["#ffa53d", "#b04800"], cardInk: "#fff", bonus: [5, 150] },
+  red:    { name: "Red Giant",   c0: "#3d0202", c1: "#dc1a12", card: ["#ff5244", "#8a0a0a"], cardInk: "#fff", bonus: [10, 400] },
 };
 export const KEYS = Object.keys(TYPES) as BetKey[];
 export const BONUS_KEYS = KEYS.filter(k => TYPES[k].bonus);
@@ -37,7 +37,6 @@ export function snowD(r: number) {
   }
   return d;
 }
-export const P_FISH = new Path2D(FISH_D), P_FIN = new Path2D(FIN_D), P_CRYSTAL = new Path2D(CRYSTAL_D), P_SNOW = new Path2D(snowD(15));
 
 // 48 segments: 1 Red, 2 Orange, 5 Blue, 20 Snowflake, 20 Icicle (bonus chance 8/48 ≈ 1 spin in 6)
 export const N = 48, ARC = TAU / N;

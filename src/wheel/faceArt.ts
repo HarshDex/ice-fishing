@@ -1,10 +1,11 @@
 // Paints the wheel face (segments, labels, multipliers, hub plate) into a canvas that becomes the
 // texture of the 3D wheel. Coordinates are the original 1200px design, centred on (0,0).
-import { ARC, N, P_CRYSTAL, P_FIN, P_FISH, P_SNOW, TYPES, WHEEL } from "../game/config";
+import { ARC, CRYSTAL_D, FIN_D, FISH_D, N, TYPES, WHEEL, snowD } from "../game/config";
 import { DISPLAY, TAU } from "../core/util";
 import { PEG_R } from "./physics";
 
 export const R_FACE = 502, R_SEG = 468, HUB = 152;
+const P_FISH = new Path2D(FISH_D), P_FIN = new Path2D(FIN_D), P_CRYSTAL = new Path2D(CRYSTAL_D), P_SNOW = new Path2D(snowD(15));
 
 const grain = (() => {
   const n = document.createElement("canvas"); n.width = n.height = 220;
@@ -84,6 +85,9 @@ export function drawFace(c: CanvasRenderingContext2D, mults: Record<number, numb
     }
     c.restore();
   }
+  g = c.createRadialGradient(0, 0, HUB, 0, 0, R_SEG); // painted depth: darker toward the hub and under the rim
+  g.addColorStop(0, "rgba(0,8,22,.42)"); g.addColorStop(.22, "rgba(0,8,22,0)"); g.addColorStop(.86, "rgba(0,8,22,0)"); g.addColorStop(1, "rgba(0,8,22,.3)");
+  c.beginPath(); c.arc(0, 0, R_SEG, 0, TAU); c.fillStyle = g; c.fill();
   for (let i = 0; i < N; i++) { // dark sockets the 3D brass pegs sit in
     const x = Math.cos(i * ARC) * PEG_R, y = Math.sin(i * ARC) * PEG_R;
     g = c.createRadialGradient(x, y, 5, x, y, 17); g.addColorStop(0, "rgba(0,0,0,.75)"); g.addColorStop(1, "rgba(0,0,0,0)"); disc(c, x, y, 17, g);
